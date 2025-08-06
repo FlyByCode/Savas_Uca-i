@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savaş Uçakları Portalı</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Share Tech Mono', 'Segoe UI', Arial, sans-serif;
+      background: #111923;
+      color: #e2eaf3;
+      margin: 0;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Arka plan animasyonu */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 110, 199, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.05) 0%, transparent 50%);
+      animation: backgroundFloat 20s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes backgroundFloat {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      33% { transform: scale(1.1) rotate(1deg); }
+      66% { transform: scale(0.95) rotate(-1deg); }
+    }
+
+    header {
+      background: #18243b;
+      color: #6df7c1;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #64ffda44;
+      position: relative;
+    }
+
+    .signature {
+      font-size: 1rem;
+      color: #ffde59;
+      font-style: italic;
+      position: relative;
+    }
+
+    .signature::before {
+      content: '✈️ ';
+      margin-right: 5px;
+    }
+
+    nav {
+      background: #0b141e;
+      padding: 1rem 2rem;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      box-shadow: 0 2px 12px #0008;
+    }
+    nav ul {
+      display: flex;
+      gap: 1rem;
+      list-style: none;
+      margin: 0; 
+      padding: 0;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: #6df7c1;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.3s;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+    nav a:hover, nav .active {
+      color: #ffde59;
+      background: rgba(255, 222, 89, 0.1);
+      border-bottom: 2px solid #ffde59;
+    }
+    
+    .section {
+      display: none;
+      max-width: 1200px;
+      margin: 2rem auto 1rem auto;
+      background: rgba(22, 34, 45, 0.97);
+      border-radius: 18px;
+      box-shadow: 0 4px 40px #007f5f11;
+      padding: 2rem 2.2rem;
+      position: relative;
+      border: 1px solid #34e0a1;
+      backdrop-filter: blur(10px);
+    }
+    .section.active { display: block; }
+    
+    .aircraft-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+    
+    .aircraft-card {
+      background: #181f2b;
+      border: 1px solid #6df7c155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s;
+      box-shadow: 0 2px 16px #00ff7b11;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .aircraft-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(109, 247, 193, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .aircraft-card:hover::before {
+      left: 100%;
+    }
+
+    .aircraft-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px #00ff7b22;
+      border-color: #6df7c1;
+    }
+    
+    .aircraft-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 9px;
+      border: 1px solid #34e0a1;
+      background: #212733;
+    }
+    
+    .aircraft-card h3 { 
+      color: #6df7c1; 
+      margin: 0.8rem 0 0.5rem 0; 
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    
+    .aircraft-card .specs { 
+      font-size: 0.9rem; 
+      color: #ccf; 
+      line-height: 1.6;
+    }
+
+    .specs strong {
+      color: #6df7c1;
+    }
+    
+    h2 { 
+      color: #6df7c1; 
+      margin-top: 1.5rem; 
+      letter-spacing: 1px;
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Projelerim bölümü için özel stiller */
+    .project-container {
+      display: grid;
+      gap: 3rem;
+      margin: 2rem 0;
+    }
+
+    .project-item {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d4a69 100%);
+      padding: 2rem;
+      border-radius: 15px;
+      border: 1px solid #4299e1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #6df7c1, #4299e1, #ffde59);
+    }
+
+    .project-title {
+      color: #6df7c1;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .project-content {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .project-text {
+      line-height: 1.8;
+      color: #e2eaf3;
+    }
+
+    .project-visual {
+      background: #0f1922;
+      border: 1px solid #34e0a1;
+      border-radius: 10px;
+      padding: 1rem;
+      height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grafik elemanlar */
+    .aircraft-diagram {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .graphene-layer {
+      position: absolute;
+      bottom: 20px;
+      left: 10%;
+      right: 10%;
+      height: 3px;
+      background: linear-gradient(90deg, #6df7c1, #4299e1);
+      border-radius: 2px;
+      animation: graphenePulse 2s infinite;
+    }
+
+    @keyframes graphenePulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; transform: scaleY(1.2); }
+    }
+
+    .piezo-elements {
+      position: absolute;
+      bottom: 15px;
+      left: 20%;
+      right: 20%;
+      height: 8px;
+      display: flex;
+      gap: 5px;
+    }
+
+    .piezo-elements::before,
+    .piezo-elements::after {
+      content: '';
+      flex: 1;
+      background: #ffde59;
+      border-radius: 2px;
+      animation: piezoCharge 1.5s infinite alternate;
+    }
+
+    @keyframes piezoCharge {
+      0% { opacity: 0.5; height: 8px; }
+      100% { opacity: 1; height: 12px; }
+    }
+
+    .news-list, .innovation-list {
+      list-style: none;
+      padding: 0;
+      margin: 2rem 0;
+    }
+    
+    .news-list li, .innovation-list li {
+      background: rgba(24, 36, 59, 0.6);
+      margin: 1rem 0;
+      padding: 1.5rem;
+      border-left: 4px solid #6df7c1;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    .news-list li:hover, .innovation-list li:hover {
+      background: rgba(24, 36, 59, 0.8);
+      transform: translateX(10px);
+    }
+    
+    .contact-form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .contact-form label { 
+      display: block;
+      margin-top: 1rem; 
+      color: #6df7c1;
+      font-weight: bold;
+    }
+    
+    .contact-form input, .contact-form textarea {
+      width: 100%;
+      padding: 0.8rem; 
+      border-radius: 8px; 
+      border: 1px solid #6df7c1;
+      background: #101a23; 
+      color: #e2eaf3; 
+      font-size: 1rem; 
+      margin-top: 0.5rem;
+      transition: border-color 0.3s;
+    }
+
+    .contact-form input:focus, .contact-form textarea:focus {
+      outline: none;
+      border-color: #ffde59;
+      box-shadow: 0 0 10px rgba(255, 222, 89, 0.3);
+    }
+    
+    .contact-form button {
+      background: linear-gradient(135deg, #34e0a1, #6df7c1);
+      color: #111923; 
+      border: none; 
+      border-radius: 8px;
+      padding: 1rem 2.5rem; 
+      font-size: 1.1rem; 
+      font-weight: bold;
+      letter-spacing: 1px; 
+      cursor: pointer; 
+      margin-top: 1.5rem;
+      transition: all 0.3s;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .contact-form button:hover { 
+      background: linear-gradient(135deg, #ffde59, #ff9800);
+      color: #18243b;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(52, 224, 161, 0.4);
+    }
+
+    /* Parça detay stilleri */
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .component-card {
+      background: linear-gradient(135deg, #1a2332 0%, #233247 100%);
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid #4299e1;
+      transition: all 0.3s;
+    }
+
+    .component-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(66, 153, 225, 0.2);
+    }
+
+    .component-card h3 {
+      color: #6df7c1;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+
+    .component-visual {
+      width: 100%;
+      height: 150px;
+      background: #0f1922;
+      border: 1px solid #34e0a1;
+      border-radius: 8px;
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6df7c1;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Wing animations */
+    .wing-straight::before {
+      content: '';
+      position: absolute;
+      width: 80%;
+      height: 4px;
+      background: #6df7c1;
+      top: 50%;
+      left: 10%;
+      transform: translateY(-50%);
+    }
+
+    .wing-swept::before {
+      content: '';
+      position: absolute;
+      width: 60%;
+      height: 4px;
+      background: #6df7c1;
+      top: 50%;
+      left: 20%;
+      transform: translateY(-50%) rotate(-20deg);
+    }
+
+    .wing-delta::before {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 40px solid transparent;
+      border-right: 40px solid transparent;
+      border-bottom: 60px solid #6df7c1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @media (max-width: 768px) {
+      .aircraft-list {
+        grid-template-columns: 1fr;
+      }
+      .project-content {
+        grid-template-columns: 1fr;
+      }
+      nav ul {
+        justify-content: center;
+      }
+      .section {
+        margin: 1rem;
+        padding: 1rem;
+      }
+    }
+
+    footer {
+      text-align: center;
+      margin: 3rem 0 2rem 0;
+      color: #6df7c1;
+      padding: 2rem;
+      background: rgba(24, 36, 59, 0.3);
+      border-radius: 10px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @keyframes thermitePulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Sekme (tab) geçişleri
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.tablink').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Tüm sekmeleri kapat
+          document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+          document.querySelectorAll('.tablink').forEach(lk => lk.classList.remove('active'));
+          // Seçili sekmeyi aç
+          const secId = this.getAttribute('data-section');
+          document.getElementById(secId).classList.add('active');
+          this.classList.add('active');
+        });
+      });
+
+      // İletişim formu
+      const contactForm = document.querySelector('.contact-form');
+      if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          alert('Mesajınız gönderildi! Teşekkürler. - Tahir');
+          this.reset();
+        });
+      }
+    });
+  </script>
+  <header>
+    <span>🚀 Savaş Uçakları Portalı</span>
+    <span class="signature">Tahir</span>
+  </header>
+  
+  <nav>
+    <ul>
+      <li><a href="#" class="tablink active" data-section="anasayfa">Ana Sayfa</a></li>
+      <li><a href="#" class="tablink" data-section="projelerim">Projelerim</a></li>
+      <li><a href="#" class="tablink" data-section="yenilikler">Yenilikler</a></li>
+      <li><a href="#" class="tablink" data-section="haberler">Haberler</a></li>
+      <li><a href="#" class="tablink" data-section="parcalar">Uçak Parçaları</a></li>
+      <li><a href="#" class="tablink" data-section="iletisim">İletişim</a></li>
+    </ul>
+  </nav>
+
+  <!-- Ana Sayfa -->
+  <div id="anasayfa" class="section active">
+    <h2>🛡️ En Gelişmiş Savaş Uçakları</h2>
+    <div class="aircraft-list">
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=400&h=200&fit=crop" alt="SR-72">
+        <h3>SR-72 Darkstar</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Lockheed Martin<br>
+          <strong>Azami Hız:</strong> Mach 6+ (Hipersonik)<br>
+          <strong>Görev:</strong> İleri keşif, hipersonik hız<br>
+          <strong>Açıklama:</strong> SR-72, scramjet motoru ile hipersonik hızlara ulaşan, radar izini minimuma indiren devrimci keşif uçağıdır. Atmosferin üst katmanlarında faaliyet gösterebilir.
+        </div>
+      </div>
+      
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=200&fit=crop" alt="B-2 Spirit">
+        <h3>B-2 Spirit</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Northrop Grumman<br>
+          <strong>Azami Hız:</strong> 1.010 km/sa<br>
+          <strong>Görev:</strong> Stratejik bombardıman<br>
+          <strong>Açıklama:</strong> Uçan kanat tasarımı ile maksimum stealth özelliği sunan, nükleer ve konvansiyonel bomba kapasiteli stratejik bombardıman uçağıdır.
+        </div>
+      </div>
+
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=200&fit=crop" alt="F-22 Raptor">
+        <h3>F-22 Raptor</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Lockheed Martin<br>
+          <strong>Azami Hız:</strong> Mach 2.25 (Supercruise: Mach 1.5)<br>
+          <strong>Görev:</strong> Hava üstünlüğü savaşçısı<br>
+          <strong>Açıklama:</strong> İtki vektörleme teknolojisi, AESA radar ve stealth özelliklerle dünyanın en gelişmiş 5. nesil avcı uçağı. Supercruise kabiliyeti ile art yakıcı olmadan süpersonik uçuş yapabilir.
+        </div>
+      </div>
+
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=200&fit=crop" alt="F-35 Lightning II">
+        <h3>F-35 Lightning II</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Lockheed Martin<br>
+          <strong>Azami Hız:</strong> Mach 1.6<br>
+          <strong>Görev:</strong> Çok rollü savaş uçağı<br>
+          <strong>Açıklama:</strong> Üç varyanta sahip (A: Konvansiyonel, B: STOVL, C: Uçak gemisi), gelişmiş sensör füzyonu ve ağ merkezli savaş kabiliyetleri ile çok amaçlı platform.
+        </div>
+      </div>
+
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=200&fit=crop" alt="Su-57">
+        <h3>Su-57 Felon</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Sukhoi (Rusya)<br>
+          <strong>Azami Hız:</strong> Mach 2+ (Supercruise: Mach 1.3)<br>
+          <strong>Görev:</strong> Çok rollü 5. nesil savaşçı<br>
+          <strong>Açıklama:</strong> Rusya'nın en gelişmiş savaş uçağı. İleri radar teknolojisi, stealth özellikleri ve süper manevra kabiliyeti ile dikkat çeker.
+        </div>
+      </div>
+
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=400&h=200&fit=crop" alt="J-20">
+        <h3>J-20 Mighty Dragon</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Chengdu (Çin)<br>
+          <strong>Azami Hız:</strong> Mach 2.5<br>
+          <strong>Görev:</strong> Uzun menzilli hava üstünlüğü<br>
+          <strong>Açıklama:</strong> Çin'in 5. nesil stealth savaşçısı. Canard konfigürasyonu ve uzun gövdesi ile yüksek hız ve menzil performansı sunar.
+        </div>
+      </div>
+
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1583829228221-c5a1db74a3c6?w=400&h=200&fit=crop" alt="KAAN">
+        <h3>KAAN (MMU)</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Turkish Aerospace (Türkiye)<br>
+          <strong>Azami Hız:</strong> Mach 1.8+ (Tahmini)<br>
+          <strong>Görev:</strong> Çok rollü 5. nesil savaşçı<br>
+          <strong>Açıklama:</strong> Türkiye'nin milli muharip uçağı. İlk uçuşunu 2023'te gerçekleştiren KAAN, yerli motor ve aviyonik sistemlerle donatılacak. - <strong>Tahir</strong>
+        </div>
+      </div>
+
+      <div class="aircraft-card">
+        <img src="https://images.unsplash.com/photo-1589825576682-0a9d8999ad6b?w=400&h=200&fit=crop" alt="Rafale">
+        <h3>Dassault Rafale</h3>
+        <div class="specs">
+          <strong>Üretici:</strong> Dassault Aviation (Fransa)<br>
+          <strong>Azami Hız:</strong> Mach 1.8<br>
+          <strong>Görev:</strong> Çok rollü savaş uçağı<br>
+          <strong>Açıklama:</strong> Canard delta kanat konfigürasyonu ile yüksek manevra kabiliyeti. Hava-hava, hava-yer ve nükleer görev kapasiteli.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projelerim Bölümü -->
+  <div id="projelerim" class="section">
+    <h2>🔬 İleri Teknoloji Uçak Projeleri</h2>
+    <div class="project-container">
+      
+      <div class="project-item">
+        <div class="project-title">
+          ⚡ Grafenli Piezoelektrik Güç Sistemi
+        </div>
+        <div class="project-content">
+          <div class="project-text">
+            <h3>Bilimsel Temeller:</h3>
+            <p><strong>Grafen Gövde Yapısı:</strong> Karbon atomlarının bal peteği şeklinde dizildiği grafen, çelikten 200 kat daha güçlü ve son derece esnektir. Uçak gövdesinde kullanıldığında, darbeleri etkili bir şekilde dağıtır ve yapısal bütünlüğü korur.</p>
+            
+            <p><strong>Piezoelektrik Enerji Dönüşümü:</strong> Grafen tabakasının altına yerleştirilen piezoelektrik kristaller (kurşun zirkonat titanat - PZT), mekanik basınçları elektrik enerjisine çevirir. Uçak manevralarında ve türbülanslarda oluşan kuvvetler, sürekli enerji üretimi sağlar.</p>
+            
+            <p><strong>Verimlilik Hesaplaması:</strong> Typical bir savaş uçağının yüzey alanı (~50 m²) üzerinde 1 bar basınç altında, piezoelektrik sistem yaklaşık 2-3 kW güç üretebilir. Bu, uçak elektronik sistemlerinin %15-20'sini karşılayabilir.</p>
+          </div>
+          <div class="project-visual">
+            <div class="aircraft-diagram">
+              <div style="color: #6df7c1; font-size: 0.9rem; position: absolute; top: 10px; left: 10px;">Grafen Katman</div>
+              <div class="graphene-layer"></div>
+              <div class="piezo-elements"></div>
+              <div style="color: #ffde59; font-size: 0.8rem; position: absolute; bottom: 5px; left: 10px;">Piezoelektrik Elemanlar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title">
+          🔥 Nanotermit Hızlandırma Sistemi
+        </div>
+        <div class="project-content">
+          <div class="project-text">
+            <h3>Teknik Detaylar:</h3>
+            <p><strong>Nanotermit Kompozisyon:</strong> Nano boyuttaki alüminyum ve demir oksit partikülleri (Al + Fe₂O₃), klasik termite göre 1000 kat daha hızlı yanma reaksiyonu gerçekleştirir. Reaksiyon sıcaklığı 3000°C'ye ulaşabilir.</p>
+            
+            <p><strong>Kontrollü Patlatma:</strong> Elektriksel ateşleme ile mikrosaniyeler içinde büyük miktarda gaz genleşmesi sağlanır. Bu sistem, kısa süreli ama çok yüksek itki üretir (100,000+ N anlık itki).</p>
+            
+            <p><strong>Güvenlik Sistemleri:</strong> Nanotermit kapsülleri, titanyum alaşımı koruyucu kılıflar içinde saklanır. Çoklu güvenlik katmanları ve fail-safe mekanizmalar ile güvenli kullanım sağlanır.</p>
+            
+            <p><strong>Performans:</strong> 0-Mach 2 ivmelenme süresi normal jet motoru: 45 saniye → Nanotermit destekli: 8 saniye</p>
+          </div>
+          <div class="project-visual">
+            <div style="color: #ff6b6b; position: absolute; top: 20px; text-align: center; width: 100%; font-size: 0.8rem;">Nanotermit Kapsüller</div>
+            <div style="position: absolute; top: 40px; left: 20%; right: 20%; height: 30px; background: linear-gradient(90deg, #ff6b6b, #ff9800); border-radius: 15px; animation: thermitePulse 1s infinite;"></div>
+            <div style="color: #6df7c1; position: absolute; bottom: 40px; text-align: center; width: 100%; font-size: 0.8rem;">Kontrol Ünitesi</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title">
+          ⚛️ Plazma Jet Motoru Sistemi
+        </div>
+        <div class="project-content">
+          <div class="project-text">
+            <h3>Plazma Fiziği:</h3>
+            <p><strong>Plazma Oluşumu:</strong> Jet yakıtı (Jet A-1), 50,000 volt elektrik arkı ile iyonize edilir. Gaz molekülleri elektron kaybederek plazma durumuna geçer (sıcaklık: 10,000-15,000 K).</p>
+            
+            <p><strong>Elektromanyetik Nozzle:</strong> Süperiletken bobinler (YBa₂Cu₃O₇ - YBCO), 5 Tesla'ya varan manyetik alan üretir. Bu alan, iyonize gazı Lorentz kuvveti ile hızlandırır.</p>
+            
+            <p><strong>Momentum Transferi:</strong> Newton'un 3. yasası gereği, plazmanın geri doğru fırlatılması uçakta ileriye doğru kuvvet oluşturur. Plazma çıkış hızı: 15,000 m/s (konvansiyonel jet: 500 m/s)</p>
+            
+            <p><strong>Özgül İtki:</strong> Plazma motoru özgül itkisi 3000-4000 s (konvansiyonel jet: 300 s), bu da 10 kat daha verimli yakıt kullanımı anlamına gelir.</p>
+          </div>
+          <div class="project-visual">
+            <div style="color: #4299e1; position: absolute; top: 15px; text-align: center; width: 100%; font-size: 0.8rem;">Süperiletken Bobinler</div>
+            <div style="position: absolute; top: 35px; left: 10%; right: 10%; height: 20px; background: linear-gradient(90deg, #4299e1, #6df7c1, #ffde59); border-radius: 10px; animation: plasmaFlow 2s infinite;"></div>
+            <div style="color: #ffde59; position: absolute; bottom: 30px; text-align: center; width: 100%; font-size: 0.8rem;">Plazma Çıkışı</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yenilikler -->
+  <div id="yenilikler" class="section">
+    <h2>🚀 Havacılık Sektöründe Yenilikler</h2>
+    <ul class="innovation-list">
+      <li><b>Hipersonik Scramjet Motorları:</b> Mach 5+ hızlarda çalışan, atmosferdeki havayı yakıt olarak kullanan devrimci motor teknolojisi.</li>
+      
+      <li><b>Metamalzeme Stealth Kaplamalar:</b> Elektromanyetik dalgaları büken özel yapılar ile %99.9 radar görünmezliği sağlayan yeni nesil kaplamalar.</li>
+      
+      <li><b>Kuantum Radar Sistemleri:</b> Kuantum dolaşıklık prensibini kullanan, stealth uçakları bile tespit edebilen gelişmiş radar teknolojisi.</li>
+      
+      <li><b>Yapay Zeka Pilotları:</b> Milisaniye reaksiyon süreleri ile insanüstü manevra kabiliyeti sunan otonom pilot sistemleri.</li>
+      
+      <li><b>Morfing Wing Teknolojisi:</b> Uçuş koşullarına göre şekil değiştiren akıllı kanat sistemleri, %30 yakıt tasarrufu sağlıyor.</li>
+      
+      <li><b>Lazer Savunma Sistemleri:</b> Füze ve mermileri havada imha eden yüksek enerjili lazer silahları.</li>
+      
+      <li><b>Kızılötesi Gizleme Teknolojisi:</b> Motor sıcaklığını maskeleyerek termal izlemeyi engelleyen soğutma sistemleri.</li>
+      
+      <li><b>Süperiletken Manyetik Tahrik:</b> Geleneksel pervane yerine manyetik alan kullanarak sessiz ve verimli itki sağlayan sistemler.</li>
+      
+      <li><b>Holografik Kokpit:</b> 3D hologram projeksiyonları ile pilotun çevresinde 360° bilgi gösterimi.</li>
+      
+      <li><b>Nano-bot Onarım Sistemleri:</b> Uçak yapısındaki hasarları otomatik olarak tespit edip onaran mikroskobik robotlar.</li>
+      
+      <li><b>İyonosfer İletişim Ağı:</b> Dünya'nın üst atmosferini kullanarak küresel komunikasyon sağlayan yeni nesil haberleşme.</li>
+      
+      <li><b>Graviton Tespit Sensörleri:</b> Yerçekimi dalgalarını ölçerek gizli nesneleri tespit eden teorik sensör teknolojisi.</li>
+    </ul>
+  </div>
+
+  <!-- Haberler -->
+  <div id="haberler" class="section">
+    <h2>📰 Havacılık Haberleri</h2>
+    <ul class="news-list">
+      <li><b>SR-72 Darkstar'ın İlk Hipersonik Test Uçuşu Başarıyla Tamamlandı!</b> Lockheed Martin'in geliştirdiği SR-72, Mach 6 hıza ulaşarak yeni bir rekor kırdı. (Mart 2025)</li>
+      
+      <li><b>Türk KAAN'ı İkinci Test Uçuşunda Süpersonik Hız Aştı</b> - Turkish Aerospace'in milli muharip uçağı KAAN, Mach 1.2 hıza ulaştı. <em>- Tahir</em></li>
+      
+      <li><b>F-35'e Kuantum Radar Entegrasyonu</b> Başladı: Yeni nesil sensör sistemleri ile stealth uçak tespiti mümkün hale geliyor.</li>
+      
+      <li><b>Çin'in J-35 Prototipinin Görüntüleri Sızdı:</b> İkinci stealth savaşçısı J-35'in deniz üssünde test edildiği görüldü.</li>
+      
+      <li><b>Rusya Su-75 Checkmate'i Seri Üretime Aldı:</b> Tek motorlu stealth savaşçının ilk parti üretimi başladı.</li>
+      
+      <li><b>ABD 6. Nesil NGAD Programından Yeni Detaylar:</b> 2030'da hizmete girecek gelecek nesil savaşçının özellikleri açıklandı.</li>
+      
+      <li><b>İnsansız Savaş Uçağı MQ-28 Ghost Bat Avustralya'da Test Edildi:</b> Boeing'in geliştirdiği loyal wingman konsepti başarıyla uçtu.</li>
+      
+      <li><b>Hindistan AMCA Projesinde Yerli Motor Geliştirilecek:</b> 5. nesil savaşçı için kendi motor teknolojilerini geliştiriyor.</li>
+      
+      <li><b>İran Kowsar-88 Savaş Uçağının Geliştirilmiş Versiyonunu Tanıttı:</b> Yerli aviyonik sistemler ile donatılan yeni model.</li>
+      
+      <li><b>İsrail F-35I'lara Özel Elektronik Harp Sistemleri Entegre Etti:</b> Adir versiyonuna yeni yetenekler eklendi.</li>
+      
+      <li><b>Fransa ve Almanya FCAS Projesinde Anlaştı:</b> 2040'ta hizmete girecek Avrupa'nın 6. nesil savaşçısı için işbirliği.</li>
+      
+      <li><b>Japonya Mitsubishi X-2 Shinshin'i Yeniden Test Edecek:</strong> Stealth teknolojilerinin geliştirilmesi için yeni uçuşlar planlanıyor.</li>
+    </ul>
+  </div>
+
+  <!-- Uçak Parçaları -->
+  <div id="parcalar" class="section">
+    <h2>🔧 Uçak Parçaları ve Teknolojileri</h2>
+    
+    <h3 style="color: #ffde59; margin: 2rem 0 1rem 0;">✈️ Kanat Türleri</h3>
+    <div class="component-grid">
+      <div class="component-card">
+        <h3>Düz Kanat</h3>
+        <div class="component-visual wing-straight">
+          📏
+        </div>
+        <p><strong>Özellikler:</strong> Düşük hızlı uçuşlarda yüksek kaldırma kuvveti sağlar. Eğitim ve hafif uçaklarda kullanılır.</p>
+        <p><strong>Avantajları:</strong> Basit üretim, düşük maliyet, iyi alçak hız performansı</p>
+        <p><strong>Dezavantajları:</strong> Yüksek hızda dalga direnci artışı</p>
+      </div>
+      
+      <div class="component-card">
+        <h3>Süpürülmüş Kanat</h3>
+        <div class="component-visual wing-swept">
+          📐
+        </div>
+        <p><strong>Özellikler:</strong> 30-45° geri süpürülmüş tasarım, dalga direncini azaltır.</p>
+        <p><strong>Kullanım:</strong> F-16, F/A-18, MiG-29 gibi süpersonik savaşçılarda</p>
+        <p><strong>Avantajları:</strong> Yüksek hızda verimlilik, mach dalgası gecikmesi</p>
+      </div>
+      
+      <div class="component-card">
+        <h3>Delta Kanat</h3>
+        <div class="component-visual wing-delta">
+          🔺
+        </div>
+        <p><strong>Özellikler:</strong> Üçgen şeklinde tasarım, yüksek hızda stabilite sağlar.</p>
+        <p><strong>Kullanım:</strong> Dassault Mirage, Eurofighter Typhoon</p>
+        <p><strong>Avantajları:</strong> Güçlü yapı, büyük iç hacim, yüksek hız performansı</p>
+      </div>
+    </div>
+
+    <h3 style="color: #ffde59; margin: 2rem 0 1rem 0;">🚀 Motor Türleri</h3>
+    <div class="component-grid">
+      <div class="component-card">
+        <h3>Turbojet Motor</h3>
+        <div class="component-visual">
+          🌀
+        </div>
+        <p><strong>Çalışma Prensibi:</strong> Havayı sıkıştırır, yakıt ekleyip yakar, sıcak gazları fırlatır.</p>
+        <p><strong>Kullanım:</strong> İlk nesil jet uçakları (MiG-21, F-104)</p>
+        <p><strong>Özellikler:</strong> Basit tasarım, yüksek hızda verimli, yüksek yakıt tüketimi</p>
+      </div>
+      
+      <div class="component-card">
+        <h3>Turbofan Motor</h3>
+        <div class="component-visual">
+          🌪️
+        </div>
+        <p><strong>Çalışma Prensibi:</strong> Büyük fan havayı çeker, bir kısmı çekirdek motordan, çoğu bypass'tan geçer.</p>
+        <p><strong>Kullanım:</strong> Modern savaş uçakları (F-22, F-35, Su-57)</p>
+        <p><strong>Avantajları:</strong> Düşük yakıt tüketimi, az gürültü, yüksek itki</p>
+      </div>
+      
+      <div class="component-card">
+        <h3>Scramjet Motor</h3>
+        <div class="component-visual">
+          ⚡
+        </div>
+        <p><strong>Çalışma Prensibi:</strong> Hipersonik hızlarda havayı süpersonik durumda yakar.</p>
+        <p><strong>Kullanım:</strong> SR-72 Darkstar gibi hipersonik araçlar</p>
+        <p><strong>Özellikler:</strong> Mach 5+ hızlarda çalışır, hareketli parça yok</p>
+      </div>
+    </div>
+
+    <h3 style="color: #ffde59; margin: 2rem 0 1rem 0;">🎛️ Aviyonik Sistemler</h3>
+    <div class="component-grid">
+      <div class="component-card">
+        <h3>AESA Radar</h3>
+        <div class="component-visual">
+          📡
+        </div>
+        <p><strong>Aktif Elektronik Taramalı Dizi:</strong> Binlerce küçük verici-alıcı modülden oluşur.</p>
+        <p><strong>Avantajları:</strong> Çoklu hedef takibi, düşük tespit edilme riski, yüksek çözünürlük</p>
+        <p><strong>Kullanım:</strong> F-22 (APG-77), F-35 (APG-81)</p>
+      </div>
+      
+      <div class="component-card">
+        <h3>Fly-by-Wire Sistemi</h3>
+        <div class="component-visual">
+          🖥️
+        </div>
+        <p><strong>Dijital Uçuş Kontrol:</strong> Pilot komutları bilgisayar tarafından işlenir ve optimize edilir.</p>
+        <p><strong>Özellikler:</strong> Statik kararsız uçakları kontrol eder, pilot hatalarını önler</p>
+        <p><strong>Avantajları:</strong> Yüksek manevra kabiliyeti, yakıt tasarrufu</p>
+      </div>
+      
+      <div class="component-card">
+        <h3>Stealth Kaplama</h3>
+        <div class="component-visual">
+          👻
+        </div>
+        <p><strong>Radar Soğurucu Malzeme (RAM):</strong> Elektromanyetik dalgaları emer veya dağıtır.</p>
+        <p><strong>Tipleri:</strong> Ferrit kaplama, metamalzeme, şekil optimizasyonu</p>
+        <p><strong>Etkinlik:</strong> Radar izini %99'a kadar azaltabilir</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- İletişim -->
+  <div id="iletisim" class="section">
+    <h2>📧 İletişim</h2>
+    <p style="text-align: center; margin-bottom: 2rem; color: #6df7c1;">
+      Havacılık teknolojileri hakkında sorularınız için bana ulaşabilirsiniz.
+    </p>
+    <form class="contact-form">
+      <label for="name">Adınız Soyadınız:</label>
+      <input type="text" id="name" name="name" required>
+      
+      <label for="email">E-posta Adresiniz:</label>
+      <input type="email" id="email" name="email" required>
+      
+      <label for="subject">Konu:</label>
+      <input type="text" id="subject" name="subject" placeholder="Örn: F-22 Raptor hakkında soru">
+      
+      <label for="message">Mesajınız:</label>
+      <textarea id="message" name="message" rows="6" placeholder="Sorunuzu veya önerinizi buraya yazınız..." required></textarea>
+      
+      <button type="submit">Mesajı Gönder</button>
+    </form>
+  </div>
+
+  <footer>
+    &copy; 2025 Savaş Uçakları Portalı | Geliştirici: <strong>Tahir</strong><br>
+    <small>Bu portal eğitim amaçlıdır ve teknik bilgiler araştırmaya dayalıdır.</small>
+  </footer>
+
+  <style>
+    @keyframes plasmaFlow {
+      0% { background: linear-gradient(90deg, #4299e1, #6df7c1, #ffde59); }
+      50% { background: linear-gradient(90deg, #ffde59, #4299e1, #6df7c1); }
+      100% { background: linear-gradient(90deg, #4299e1, #6df7c1, #ffde59); }
+    }
+  </style>
